@@ -8,3 +8,6 @@ p{
 .notificari{
 margin-bottom: -10px;
 }
+ul{
+  padding-left: 0px !important;
+}

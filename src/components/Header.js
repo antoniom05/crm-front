@@ -57,7 +57,9 @@ const Header = ({ toggleSidebar }) => {
         className="bg-blue-500 text-white py-2 px-4 rounded hidden md:flex items-center">
           Document Nou
         </button>
-        <button className="bg-blue-500 text-white p-2 rounded-full flex md:hidden">
+        <button className="bg-blue-500 text-white p-2 rounded-full flex md:hidden" onClick={() => navigate('/new-document')}
+>
+          
           <span className="material-icons">add</span>
         </button>
       </div>

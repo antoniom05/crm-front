@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const NewDocumentForm = () => {
+const NewDocumentForm = ({ addDocument }) => {
   const [formData, setFormData] = useState({
     nrOrdine: '',
     tipForma: '',
@@ -14,13 +14,32 @@ const NewDocumentForm = () => {
     subiectDetalii: '',
   });
 
+  // Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form Data:', formData);
+    if (typeof addDocument === 'function') {
+      addDocument(formData); // Pass form data to addDocument function
+      // Reset form after submission
+      setFormData({
+        nrOrdine: '',
+        tipForma: '',
+        dataApel: '',
+        tipApel: '',
+        localitate: '',
+        agentEconomic: '',
+        persoanaFizica: '',
+        reclamat: '',
+        serviciuReclamat: '',
+        subiectDetalii: '',
+      });
+    } else {
+      console.error('addDocument is not a function');
+    }
   };
 
   return (
@@ -185,5 +204,6 @@ const NewDocumentForm = () => {
     </form>
   );
 };
+
 
 export default NewDocumentForm;
