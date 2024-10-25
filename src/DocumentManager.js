@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import NewDocumentForm from './NewDocumentForm';  // Your NewDocumentForm component
-import DocumentPage from './components/DocumentPage';  // The page where documents are listed
+import DocumentTable from './DocumentTable';      // Adjusted to use DocumentTable
 
 const DocumentManager = () => {
   const [documents, setDocuments] = useState([]);
@@ -18,8 +18,8 @@ const DocumentManager = () => {
       {/* Pass addDocument to NewDocumentForm */}
       <NewDocumentForm addDocument={addDocument} />
       
-      {/* Render your documents in DocumentPage */}
-      <DocumentPage documents={documents} />
+      {/* Render your documents in DocumentTable */}
+      <DocumentTable documents={documents} />
     </div>
   );
 };

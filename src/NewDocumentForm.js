@@ -2,21 +2,24 @@ import React, { useState } from 'react';
 
 const NewDocumentForm = ({ addDocument }) => {
   const [formData, setFormData] = useState({
-    nrOrdine: '',
-    tipForma: '',
+    nrDeIesire: '',
+    continutConsultatie: '',
     dataApel: '',
-    tipApel: '',
     localitate: '',
+    persFizica: false,
+    persJuridica: false,
     agentEconomic: '',
-    persoanaFizica: '',
-    reclamat: '',
-    serviciuReclamat: '',
-    subiectDetalii: '',
+    categorieInformatie: '',
+    detalii: '',
   });
 
   // Handle input change
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ 
+      ...formData, 
+      [name]: type === 'checkbox' ? checked : value 
+    });
   };
 
   // Handle form submission
@@ -26,16 +29,15 @@ const NewDocumentForm = ({ addDocument }) => {
       addDocument(formData); // Pass form data to addDocument function
       // Reset form after submission
       setFormData({
-        nrOrdine: '',
-        tipForma: '',
+        nrDeIesire: '',
+        continutConsultatie: '',
         dataApel: '',
-        tipApel: '',
         localitate: '',
+        persFizica: false,
+        persJuridica: false,
         agentEconomic: '',
-        persoanaFizica: '',
-        reclamat: '',
-        serviciuReclamat: '',
-        subiectDetalii: '',
+        categorieInformatie: '',
+        detalii: '',
       });
     } else {
       console.error('addDocument is not a function');
@@ -46,7 +48,7 @@ const NewDocumentForm = ({ addDocument }) => {
     <form onSubmit={handleSubmit} className="p-2 max-w-4xl mx-auto">
       <div className="mb-6">
         <div className="flex justify-between mt-4">
-          <button className="text-red-500">Anulează</button>
+          <button type="button" className="text-red-500">Anulează</button>
           <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">
             Salvează
           </button>
@@ -57,31 +59,36 @@ const NewDocumentForm = ({ addDocument }) => {
       <div className="bg-sky-100 p-6 rounded-lg mb-6">
         <h2 className="text-lg font-semibold mb-4">1. Date Apel</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Nr. de iesire */}
           <div>
             <label className="block mb-1">*Nr. de ieșire</label>
             <input
               type="text"
-              name="nrOrdine"
-              value={formData.nrOrdine}
+              name="nrDeIesire"
+              value={formData.nrDeIesire}
               onChange={handleChange}
               className="border rounded p-2 w-full"
               required
             />
           </div>
+
+          {/* Continut Consultatie - select */}
           <div>
-            <label className="block mb-1">*Tip forma</label>
+            <label className="block mb-1">*Conținut Consultație</label>
             <select
-              name="tipForma"
-              value={formData.tipForma}
+              name="continutConsultatie"
+              value={formData.continutConsultatie}
               onChange={handleChange}
               className="border rounded p-2 w-full"
               required
             >
               <option value="">Select...</option>
-              <option value="Apel">Apel</option>
-              <option value="Consultatie">Consultatie</option>
+              <option value="Consultatie1">Consultatie 1</option>
+              <option value="Consultatie2">Consultatie 2</option>
             </select>
           </div>
+
+          {/* Data apelului */}
           <div>
             <label className="block mb-1">*Data apelului</label>
             <input
@@ -93,107 +100,94 @@ const NewDocumentForm = ({ addDocument }) => {
               required
             />
           </div>
-          <div>
-            <label className="block mb-1">*Tip apel / Consultație</label>
-            <select
-              name="tipApel"
-              value={formData.tipApel}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            >
-              <option value="">Select...</option>
-              <option value="Industriale">Industriale</option>
-              <option value="Consultatie">Consultatie</option>
-            </select>
-          </div>
+
+          {/* Localitatea (CUATM) */}
           <div>
             <label className="block mb-1">*Localitatea (CUATM)</label>
-            <input
-              type="text"
+            <select
               name="localitate"
               value={formData.localitate}
               onChange={handleChange}
               className="border rounded p-2 w-full"
               required
-            />
+            >
+              <option value="">Select...</option>
+              <option value="Localitatea1">Localitatea 1</option>
+              <option value="Localitatea2">Localitatea 2</option>
+            </select>
+          </div>
+
+          {/* Checkboxes */}
+          <div className="col-span-1">
+            <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
+              <label>Pers. Fizică</label>
+              <input
+                type="checkbox"
+                name="persFizica"
+                checked={formData.persFizica}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <div className="col-span-1">
+            <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
+              <label>Pers. Juridică</label>
+              <input
+                type="checkbox"
+                name="persJuridica"
+                checked={formData.persJuridica}
+                onChange={handleChange}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Agent Economic Section */}
+      {/* 2. Consultație Section */}
       <div className="bg-sky-100 p-6 rounded-lg mb-6">
-        <h2 className="text-lg font-semibold mb-4">2. Agent Economic</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-lg font-semibold mb-4">2. Consultație</h2>
+        <div>
+          <label className="block mb-1">*Agent economic / Denumire / IDNO</label>
+          <select
+            name="agentEconomic"
+            value={formData.agentEconomic}
+            onChange={handleChange}
+            className="border rounded p-2 w-full"
+            required
+          >
+            <option value="">Select...</option>
+            <option value="Agent1">Agent 1</option>
+            <option value="Agent2">Agent 2</option>
+          </select>
+        </div>
+      </div>
+
+      {/* 3. Detalii Apel Section */}
+      <div className="bg-sky-100 p-6 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4">3. Detalii Apel</h2>
+        <div className="grid grid-cols-1 gap-4">
+          {/* Categorie Informatie */}
           <div>
-            <label className="block mb-1">*Agentul economic din INSPECT</label>
+            <label className="block mb-1">*Categorie Informație</label>
             <select
-              name="agentEconomic"
-              value={formData.agentEconomic}
+              name="categorieInformatie"
+              value={formData.categorieInformatie}
               onChange={handleChange}
               className="border rounded p-2 w-full"
               required
             >
               <option value="">Select...</option>
-              <option value="Company1">Company 1</option>
-              <option value="Company2">Company 2</option>
+              <option value="Categorie1">Categorie 1</option>
+              <option value="Categorie2">Categorie 2</option>
             </select>
           </div>
-          <div>
-            <label className="block mb-1">Persoana fizică</label>
-            <input
-              type="text"
-              name="persoanaFizica"
-              value={formData.persoanaFizica}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block mb-1">Pe cine se plânge / Agent economic / Denumire / IDNO</label>
-            <input
-              type="text"
-              name="reclamat"
-              value={formData.reclamat}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* 3. Reclamație Section */}
-      <div className="bg-sky-100 p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">3. Reclamație</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Detalii */}
           <div>
-            <label className="block mb-1">*Produsul reclamat</label>
-            <input
-              type="text"
-              name="produsReclamat"
-              value={formData.produsReclamat}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1">*Serviciul reclamat</label>
-            <input
-              type="text"
-              name="serviciuReclamat"
-              value={formData.serviciuReclamat}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block mb-1">*Subiect / Detalii</label>
+            <label className="block mb-1">*Detalii</label>
             <textarea
-              name="subiectDetalii"
-              value={formData.subiectDetalii}
+              name="detalii"
+              value={formData.detalii}
               onChange={handleChange}
               className="border rounded p-2 w-full"
               required
@@ -204,6 +198,5 @@ const NewDocumentForm = ({ addDocument }) => {
     </form>
   );
 };
-
 
 export default NewDocumentForm;

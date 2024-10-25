@@ -1,44 +1,33 @@
 import React, { useState } from 'react';
-import './../App.css';
 
 const DocumentTable = ({ documents = [] }) => {
   // Add some dummy data to the documents array if it's empty
   const sampleDocuments = documents.length === 0 ? [
     {
       nr: 1,
-      statut: 'Închisă',
-      nrOrdine: 'A001',
-      tipForma: 'Apel',
+      statut: 'Deschisă',
+      nrDeIesire: 'A001',
+      continutConsultatie: 'Consultatie1',
       dataApel: '2023-09-12',
-      agentEconomic: 'Firma 1',
-      persoanaFizica: 'Ion Popescu',
-      reclamat: 'Companie XYZ',
-      localitate: 'București',
-      tipApel: 'Reclamație',
+      localitate: 'Localitatea1',
+      persFizica: true,
+      persJuridica: false,
+      agentEconomic: 'Agent1',
+      categorieInformatie: 'Categorie1',
+      detalii: 'Detalii exemplu',
     },
     {
       nr: 2,
-      statut: 'Deschisă',
-      nrOrdine: 'A002',
-      tipForma: 'Consultatie',
-      dataApel: '2023-09-15',
-      agentEconomic: 'Firma 2',
-      persoanaFizica: 'Maria Ionescu',
-      reclamat: 'Companie ABC',
-      localitate: 'Cluj-Napoca',
-      tipApel: 'Consultatie',
-    },
-    {
-      nr: 3,
       statut: 'Închisă',
-      nrOrdine: 'A003',
-      tipForma: 'Apel',
-      dataApel: '2023-10-01',
-      agentEconomic: 'Firma 3',
-      persoanaFizica: 'George Vasile',
-      reclamat: 'Companie LMN',
-      localitate: 'Timișoara',
-      tipApel: 'Reclamație',
+      nrDeIesire: 'A002',
+      continutConsultatie: 'Consultatie2',
+      dataApel: '2023-09-15',
+      localitate: 'Localitatea2',
+      persFizica: false,
+      persJuridica: true,
+      agentEconomic: 'Agent2',
+      categorieInformatie: 'Categorie2',
+      detalii: 'Alte detalii',
     },
   ] : documents;
 
@@ -104,7 +93,7 @@ const DocumentTable = ({ documents = [] }) => {
       {/* Table section */}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-          <thead className="bg-gray-100 relative">
+          <thead className="bg-gray-100">
             <tr>
               <th className="py-2 px-4 border-b text-left">
                 <input
@@ -115,6 +104,8 @@ const DocumentTable = ({ documents = [] }) => {
                 />
               </th>
               <th className="py-2 px-4 border-b text-left">Nr.</th>
+
+              {/* Added back hover functionality for "Statut" */}
               <th className="py-2 px-4 border-b text-left relative group">
                 Statut
                 {/* Hover dropdown for "Statut" */}
@@ -138,17 +129,25 @@ const DocumentTable = ({ documents = [] }) => {
                     >
                       În Lucru
                     </li>
+                    <li
+                      className="cursor-pointer rounded-full bg-gray-100 text-gray-600 py-1 text-center"
+                      onClick={() => handleStatusFilter('')}
+                    >
+                      Toate
+                    </li>
                   </ul>
                 </div>
               </th>
-              <th className="py-2 px-4 border-b text-left">Nr. de ordine</th>
-              <th className="py-2 px-4 border-b text-left">Tip formă</th>
-              <th className="py-2 px-4 border-b text-left">Dată Apel</th>
-              <th className="py-2 px-4 border-b text-left">Agent Economic</th>
-              <th className="py-2 px-4 border-b text-left">Persoana Fizică</th>
-              <th className="py-2 px-4 border-b text-left">Pe cine se plânge</th>
-              <th className="py-2 px-4 border-b text-left">Localitate</th>
-              <th className="py-2 px-4 border-b text-left">Tip apel</th>
+
+              <th className="py-2 px-4 border-b text-left">Nr. de ieșire</th>
+              <th className="py-2 px-4 border-b text-left">Conținut Consultație</th>
+              <th className="py-2 px-4 border-b text-left">Data apelului</th>
+              <th className="py-2 px-4 border-b text-left">Localitatea (CUATM)</th>
+              <th className="py-2 px-4 border-b text-left">Pers. Fizică</th>
+              <th className="py-2 px-4 border-b text-left">Pers. Juridică</th>
+              <th className="py-2 px-4 border-b text-left">Agent economic / Denumire / IDNO</th>
+              <th className="py-2 px-4 border-b text-left">Categorie Informație</th>
+              <th className="py-2 px-4 border-b text-left">Detalii</th>
               <th className="py-2 px-4 border-b text-left">
                 <span className="material-icons text-gray-500">settings</span>
               </th>
@@ -179,14 +178,15 @@ const DocumentTable = ({ documents = [] }) => {
                     {doc.statut}
                   </span>
                 </td>
-                <td className="py-3 px-4 border-b">{doc.nrOrdine}</td>
-                <td className="py-3 px-4 border-b">{doc.tipForma}</td>
+                <td className="py-3 px-4 border-b">{doc.nrDeIesire}</td>
+                <td className="py-3 px-4 border-b">{doc.continutConsultatie}</td>
                 <td className="py-3 px-4 border-b">{doc.dataApel}</td>
-                <td className="py-3 px-4 border-b">{doc.agentEconomic}</td>
-                <td className="py-3 px-4 border-b">{doc.persoanaFizica}</td>
-                <td className="py-3 px-4 border-b">{doc.reclamat}</td>
                 <td className="py-3 px-4 border-b">{doc.localitate}</td>
-                <td className="py-3 px-4 border-b">{doc.tipApel}</td>
+                <td className="py-3 px-4 border-b">{doc.persFizica ? 'Da' : 'Nu'}</td>
+                <td className="py-3 px-4 border-b">{doc.persJuridica ? 'Da' : 'Nu'}</td>
+                <td className="py-3 px-4 border-b">{doc.agentEconomic}</td>
+                <td className="py-3 px-4 border-b">{doc.categorieInformatie}</td>
+                <td className="py-3 px-4 border-b">{doc.detalii}</td>
                 <td className="py-3 px-4 border-b text-gray-600">
                   <span className="material-icons">list</span>
                 </td>
