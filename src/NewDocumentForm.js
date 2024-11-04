@@ -74,7 +74,7 @@ const NewDocumentForm = ({ addDocument }) => {
 
           {/* Continut Consultatie - select */}
           <div>
-            <label className="block mb-1">*Conținut Consultație</label>
+            <label className="block mb-1">*Domeniul Consultație</label>
             <select
               name="continutConsultatie"
               value={formData.continutConsultatie}
@@ -120,7 +120,7 @@ const NewDocumentForm = ({ addDocument }) => {
           {/* Checkboxes */}
           <div className="col-span-1">
             <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
-              <label>Pers. Fizică</label>
+              <label>Persoană Fizică</label>
               <input
                 type="checkbox"
                 name="persFizica"
@@ -131,7 +131,7 @@ const NewDocumentForm = ({ addDocument }) => {
           </div>
           <div className="col-span-1">
             <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
-              <label>Pers. Juridică</label>
+              <label>Persoană Juridică</label>
               <input
                 type="checkbox"
                 name="persJuridica"
@@ -145,9 +145,9 @@ const NewDocumentForm = ({ addDocument }) => {
 
       {/* 2. Consultație Section */}
       <div className="bg-sky-100 p-6 rounded-lg mb-6">
-        <h2 className="text-lg font-semibold mb-4">2. Consultație</h2>
+        <h2 className="text-lg font-semibold mb-4">2. Agent Economic</h2>
         <div>
-          <label className="block mb-1">*Agent economic / Denumire / IDNO</label>
+          <label className="block mb-1">*Agent economic Denumire / IDNO</label>
           <select
             name="agentEconomic"
             value={formData.agentEconomic}
@@ -164,37 +164,54 @@ const NewDocumentForm = ({ addDocument }) => {
 
       {/* 3. Detalii Apel Section */}
       <div className="bg-sky-100 p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">3. Detalii Apel</h2>
-        <div className="grid grid-cols-1 gap-4">
-          {/* Categorie Informatie */}
-          <div>
-            <label className="block mb-1">*Categorie Informație</label>
-            <select
-              name="categorieInformatie"
-              value={formData.categorieInformatie}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            >
-              <option value="">Select...</option>
-              <option value="Categorie1">Categorie 1</option>
-              <option value="Categorie2">Categorie 2</option>
-            </select>
-          </div>
+  <h2 className="text-lg font-semibold mb-4">3. Conținut Apel</h2>
+  <div className="grid grid-cols-1 gap-4">
+    {/* Categorie Produs */}
+    <div>
+      <label className="block mb-1">A. Produs</label>
+      <select
+        name="categorieProdus"
+        value={formData.categorieProdus}
+        onChange={handleChange}
+        className="border rounded p-2 w-full"
+        required
+      >
+        <option value="">Select...</option>
+        <option value="Produs1">Produs 1</option>
+        <option value="Produs2">Produs 2</option>
+      </select>
+    </div>
 
-          {/* Detalii */}
-          <div>
-            <label className="block mb-1">*Detalii</label>
-            <textarea
-              name="detalii"
-              value={formData.detalii}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            />
-          </div>
-        </div>
-      </div>
+    {/* Categorie Serviciu */}
+    <div>
+      <label className="block mb-1">B. Serviciu</label>
+      <select
+        name="categorieServiciu"
+        value={formData.categorieServiciu}
+        onChange={handleChange}
+        className="border rounded p-2 w-full"
+        required
+      >
+        <option value="">Select...</option>
+        <option value="Serviciu1">Serviciu 1</option>
+        <option value="Serviciu2">Serviciu 2</option>
+      </select>
+    </div>
+
+    {/* Detalii */}
+    <div>
+      <label className="block mb-1">*Detalii consultație</label>
+      <textarea
+        name="detalii"
+        value={formData.detalii}
+        onChange={handleChange}
+        className="border rounded p-2 w-full"
+        required
+      />
+    </div>
+  </div>
+</div>
+
     </form>
   );
 };
