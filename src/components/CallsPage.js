@@ -9,34 +9,34 @@ const CallsPage = () => {
     {
       statut: 'Apel ratat',
       statutColor: 'bg-red-100 text-red-600',
-      dateApel: 'August 28, 2024 18:00',
-      notite: 'Lorem ipsum dolor sit amet consectetur. Malesuada imperdiet ut sapien in a eu diam massa. Sit viverra ullamcorper massa hendrerit.',
-      creatDe: 'Op. John Doe',
+      dateApel: '12 Noiembrie 2024 14:30',
+      notite: 'Clientul nu a răspuns la telefon.',
+      creatDe: 'Nicu',
       contact: '-',
     },
     {
       statut: 'Apel primit',
       statutColor: 'bg-green-100 text-green-600',
-      dateApel: 'August 28, 2024 18:00',
-      notite: 'Lorem ipsum dolor sit amet consectetur. Malesuada imperdiet ut sapien in a eu diam massa. Sit viverra ullamcorper massa hendrerit.',
-      creatDe: 'Op. John Doe',
-      contact: 'Elena Dumitrescu',
+      dateApel: '11 Noiembrie 2024 09:15',
+      notite: 'Solicitare informații despre servicii metrologice.',
+      creatDe: 'Nicu',
+      contact: 'Andrei Vasilescu',
     },
     {
-      statut: 'Număr greșit',
-      statutColor: 'bg-gray-100 text-gray-600',
-      dateApel: 'August 28, 2024 18:00',
-      notite: 'Lorem ipsum dolor sit amet consectetur. Malesuada imperdiet ut sapien in a eu diam massa. Sit viverra ullamcorper massa hendrerit.',
-      creatDe: 'Op. John Doe',
+      statut: 'Apel ratat',
+      statutColor: 'bg-red-100 text-red-600',
+      dateApel: '10 Noiembrie 2024 16:45',
+      notite: 'Clientul a închis înainte de a prelua apelul.',
+      creatDe: 'Nicu',
       contact: '-',
     },
     {
-      statut: 'Număr greșit',
-      statutColor: 'bg-gray-100 text-gray-600',
-      dateApel: 'August 28, 2024 18:00',
-      notite: 'Lorem ipsum dolor sit amet consectetur. Malesuada imperdiet ut sapien in a eu diam massa. Sit viverra ullamcorper massa hendrerit.',
-      creatDe: 'Op. John Doe',
-      contact: '-',
+      statut: 'Apel primit',
+      statutColor: 'bg-green-100 text-green-600',
+      dateApel: '09 Noiembrie 2024 11:20',
+      notite: 'Plângere privind un produs alimentar expirat.',
+      creatDe: 'Nicu',
+      contact: 'Simona Petrescu',
     },
   ];
 
@@ -112,7 +112,7 @@ const CallsPage = () => {
                 key={index}
                 className={`hover:bg-gray-50 h-14 md:h-16 text-sm md:text-base ${
                   selectedRows.includes(index) ? 'bg-blue-100' : ''
-                }`} // Highlight selected rows
+                }`}
               >
                 <td className="py-2 md:py-3 px-2 md:px-4 border-b">
                   <input
@@ -133,7 +133,9 @@ const CallsPage = () => {
                   </a>
                 </td>
                 <td className="py-2 md:py-3 px-2 md:px-4 border-b text-gray-600">{row.creatDe}</td>
-                <td className="py-2 md:py-3 px-2 md:px-4 border-b text-blue-600 hover:underline">{row.contact}</td>
+                <td className="py-2 md:py-3 px-2 md:px-4 border-b text-blue-600 hover:underline">
+                  {row.contact}
+                </td>
                 <td className="py-2 md:py-3 px-2 md:px-4 border-b text-gray-600">
                   <span className="material-icons">list</span>
                 </td>
@@ -149,7 +151,7 @@ const CallsPage = () => {
               key={index}
               className={`bg-white border border-gray-200 rounded-lg mb-4 p-4 ${
                 selectedRows.includes(index) ? 'bg-blue-100' : ''
-              }`} // Highlight selected rows
+              }`}
             >
               <div className="flex justify-between items-center mb-2">
                 <span className={`py-1 px-3 rounded-full text-sm ${row.statutColor}`}>
@@ -162,14 +164,17 @@ const CallsPage = () => {
                 />
               </div>
               <div className="text-gray-600 text-sm mb-1">
-                <strong>Data Apel: </strong>{row.dateApel}
+                <strong>Data Apel: </strong>
+                {row.dateApel}
               </div>
               <div className="text-gray-600 text-sm mb-1">
-                <strong>Creat de: </strong>{row.creatDe}
+                <strong>Creat de: </strong>
+                {row.creatDe}
               </div>
               {row.contact !== '-' && (
                 <div className="text-blue-600 hover:underline text-sm mb-1">
-                  <strong>Contact: </strong>{row.contact}
+                  <strong>Contact: </strong>
+                  {row.contact}
                 </div>
               )}
               <div className="text-gray-600 text-sm">

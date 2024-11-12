@@ -1,33 +1,72 @@
 import React, { useState } from 'react';
 
 const DocumentTable = ({ documents = [] }) => {
-  // Add some dummy data to the documents array if it's empty
+  // Add some real data to the documents array if it's empty
   const sampleDocuments = documents.length === 0 ? [
     {
       nr: 1,
       statut: 'Deschisă',
-      nrDeIesire: 'A001',
-      continutConsultatie: 'Consultatie1',
-      dataApel: '2023-09-12',
-      localitate: 'Localitatea1',
+      nrDeIesire: 'A100',
+      continutConsultatie: 'Metrologie',
+      dataApel: '2024-11-10',
+      localitate: 'Chișinău',
       persFizica: true,
       persJuridica: false,
-      agentEconomic: 'Agent1',
-      categorieInformatie: 'Categorie1',
-      detalii: 'Detalii exemplu',
+      agentEconomic: 'SA Termoelectrica',
+      categorieInformatie: 'Contoare (apă, gaz, lumină)',
+      detalii: 'Solicitare verificare contor gaz.',
     },
     {
       nr: 2,
       statut: 'Închisă',
-      nrDeIesire: 'A002',
-      continutConsultatie: 'Consultatie2',
-      dataApel: '2023-09-15',
-      localitate: 'Localitatea2',
+      nrDeIesire: 'A101',
+      continutConsultatie: 'Reguli de Comerț',
+      dataApel: '2024-11-09',
+      localitate: 'Bălți',
       persFizica: false,
       persJuridica: true,
-      agentEconomic: 'Agent2',
-      categorieInformatie: 'Categorie2',
-      detalii: 'Alte detalii',
+      agentEconomic: 'SRL Agropiese TGR',
+      categorieInformatie: 'Materiale de construcții (amestecuri uscate)',
+      detalii: 'Întrebare privind reglementări pentru vânzarea materialelor de construcții.',
+    },
+    {
+      nr: 3,
+      statut: 'În Lucru',
+      nrDeIesire: 'A102',
+      continutConsultatie: 'Servicii',
+      dataApel: '2024-11-08',
+      localitate: 'Cahul',
+      persFizica: true,
+      persJuridica: false,
+      agentEconomic: 'SA Orange Moldova',
+      categorieInformatie: 'Servicii Turistice',
+      detalii: 'Plângere privind calitatea serviciilor turistice oferite.',
+    },
+    {
+      nr: 4,
+      statut: 'Deschisă',
+      nrDeIesire: 'A103',
+      continutConsultatie: 'Industriale',
+      dataApel: '2024-11-07',
+      localitate: 'Orhei',
+      persFizica: true,
+      persJuridica: false,
+      agentEconomic: 'SRL MoldTelecom',
+      categorieInformatie: 'Produse Digitale (calculator + accesorii)',
+      detalii: 'Reclamație privind un calculator defect.',
+    },
+    {
+      nr: 5,
+      statut: 'Închisă',
+      nrDeIesire: 'A104',
+      continutConsultatie: 'Alimentare',
+      dataApel: '2024-11-06',
+      localitate: 'Ungheni',
+      persFizica: false,
+      persJuridica: true,
+      agentEconomic: 'SRL StârNet',
+      categorieInformatie: 'Produse Alimentare',
+      detalii: 'Solicitare informații despre standardele pentru produse alimentare.',
     },
   ] : documents;
 
@@ -105,7 +144,7 @@ const DocumentTable = ({ documents = [] }) => {
               </th>
               <th className="py-2 px-4 border-b text-left">Nr.</th>
 
-              {/* Added back hover functionality for "Statut" */}
+              {/* Hover functionality for "Statut" */}
               <th className="py-2 px-4 border-b text-left relative group">
                 Statut
                 {/* Hover dropdown for "Statut" */}
@@ -140,7 +179,7 @@ const DocumentTable = ({ documents = [] }) => {
               </th>
 
               <th className="py-2 px-4 border-b text-left">Nr. de ieșire</th>
-              <th className="py-2 px-4 border-b text-left">Conținut Consultație</th>
+              <th className="py-2 px-4 border-b text-left">Domeniul Consultație</th>
               <th className="py-2 px-4 border-b text-left">Data apelului</th>
               <th className="py-2 px-4 border-b text-left">Localitatea (CUATM)</th>
               <th className="py-2 px-4 border-b text-left">Pers. Fizică</th>

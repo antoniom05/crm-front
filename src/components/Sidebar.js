@@ -23,8 +23,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 mb-8">
             <img src={ProfileImg} alt="Admin" className="rounded-full h-12 w-12" />
             <div>
-              <p className="text-gray-200 font-medium">Admin</p>
-              <p className="text-gray-200 text-sm">admin@test.com</p>
+              <p className="text-gray-200 font-medium">Nicu</p>
+              <p className="text-gray-200 text-sm">nicumk@gmail.com</p>
             </div>
           </div>
 
