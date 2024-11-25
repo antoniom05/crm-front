@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const NewDocumentForm = ({ addDocument }) => {
   const [formData, setFormData] = useState({
@@ -14,109 +14,192 @@ const NewDocumentForm = ({ addDocument }) => {
     detalii: '',
   });
 
-  // Lista localităților din Moldova
-  const localitati = [
-    'Chișinău',
-    'Bălți',
-    'Cahul',
-    'Orhei',
-    'Ungheni',
-    'Soroca',
-    'Comrat',
-    'Căușeni',
-    'Edineț',
-    'Hîncești',
-    'Strășeni',
-    'Călărași',
-  ];
+  // State for reference data
+  const [cities, setCities] = useState([]);
+  const [domains, setDomains] = useState([]);
+  const [businesses, setBusinesses] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [services, setServices] = useState([]);
 
-  // Lista domeniilor de consultație
-  const domeniiConsultatie = [
-    'Inspectoratul de Stat pentru Supravegherea Produselor Nealimentare și Protecția Consumatorilor',
-    'Industriale',
-    'Alimentare',
-    'Persoane Juridice',
-    'Servicii',
-    'Metrologie',
-    'Reguli de Comerț',
-  ];
+  // State for form submission
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState([]); // Changed to array
+  const [success, setSuccess] = useState(false);
 
-  // Lista produselor
-  const produse = [
-    'Aparate Electrocasnice (conectate la priză)',
-    'Telefon Mobil (accesorii)',
-    'Produse Digitale (calculator + accesorii)',
-    'Dispozitive medicale',
-    'Automobile + Piese Auto',
-    'Mijloace de transport (tractor, trotinetă electrică, giro board)',
-    'Produse Petroliere',
-    'Articole de grădinărit (unelte manuale)',
-    'Materiale de construcții (amestecuri uscate)',
-    'Materiale Plastice',
-    'Materiale Metalice',
-    'Materiale Ceramice, Piatră',
-    'Materiale din Sticlă',
-    'Mobila + Accesorii',
-    'Contoare (apă, gaz, lumină)',
-    'Produse Chimice',
-    'Produse Cosmetice',
-    'Produse Alimentare',
-    'Articole de bucătărie (veselă, tacâmuri)',
-    'Mărfuri textile (lenjerie de pat, pernă, plapumă, saltea)',
-    'Articole de Îmbrăcăminte + Accesorii (mănuși, căciulă, geantă, centură)',
-    'Articole de Încălțăminte',
-    'Echipament Individual de Protecție (cască, ham, centura de siguranță)',
-    'Articole pentru Copii (leagăne, căruț)',
-    'Jucării',
-    'Bijuterii (metale prețioase)',
-  ];
+  // Helper function to fetch all pages of paginated API data
+  const fetchAllPages = async (url, headers) => {
+    let allData = [];
+    let currentPage = 1;
+    let lastPage = 1;
 
-  // Lista serviciilor
-  const servicii = [
-    'Servicii Electrocasnice',
-    'Servicii Turistice',
-    'Servicii Taxi',
-    'Servicii Transportare Pasageri și Mărfuri',
-    'Servicii Auto (reparare, testare)',
-    'Servicii Reparații Accesorii',
-    'Servicii Reparații Produse Digitale (PC, tel. mob, ceas smartwatch)',
-    'Servicii Informaționale (foto, xerox, tipografie)',
-    'Servicii Reparații Încălțăminte',
-    'Servicii Reparații Îmbrăcăminte',
-    'Servicii Curățare Chimică',
-    'Servicii Comerț On-line',
-    'Servicii Cosmetice + Frizerie',
-    'Servicii Culturale',
-    'Servicii Jocuri de Noroc',
-    'Servicii Instruiri (școli, grădinițe)',
-    'Servicii de Agrement (parcuri, terenuri de distracții)',
-    'Servicii Închiriere',
-    'Servicii Funerare',
-    'Servicii Preambalare Produse',
-    'Servicii Fabricare Mobilă',
-    'Servicii Reparații Mobilă',
-    'Serviciul Metrologic',
-    'Servicii Veterinare',
-    'Servicii de Odihnă și Sport (sala de sport, saună)',
-    'Servicii Pază',
-    'Alte Servicii',
-  ];
+    try {
+      while (currentPage <= lastPage) {
+        const response = await fetch(`${url}?page=${currentPage}`, { headers });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data from ${url}`);
+        }
+        const data = await response.json();
+        allData = [...allData, ...data.data];
+        lastPage = data.last_page;
+        currentPage += 1;
+      }
+      return allData;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // Fetch reference data on component mount
+  useEffect(() => {
+    const fetchReferenceData = async () => {
+      try {
+        const token = process.env.REACT_APP_API_TOKEN || localStorage.getItem('token');
+
+        // Define the endpoints for reference data
+        const endpoints = {
+          cities: 'https://crm.xcore.md/api/cities',
+          domains: 'https://crm.xcore.md/api/domains',
+          businesses: 'https://crm.xcore.md/api/business', // Ensure the endpoint is correct
+          products: 'https://crm.xcore.md/api/products',
+          services: 'https://crm.xcore.md/api/services',
+        };
+
+        const headers = {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        };
+
+        // Fetch all reference data concurrently
+        const [
+          citiesData,
+          domainsData,
+          businessesData,
+          productsData,
+          servicesData,
+        ] = await Promise.all([
+          fetchAllPages(endpoints.cities, headers),
+          fetchAllPages(endpoints.domains, headers),
+          fetchAllPages(endpoints.businesses, headers),
+          fetchAllPages(endpoints.products, headers),
+          fetchAllPages(endpoints.services, headers),
+        ]);
+
+        setCities(citiesData || []);
+        setDomains(domainsData || []);
+        setBusinesses(businessesData || []);
+        setProducts(productsData || []);
+        setServices(servicesData || []);
+      } catch (err) {
+        console.error(err);
+        setErrors(['Eroare la încărcarea datelor. Vă rugăm să încercați din nou.']);
+      }
+    };
+
+    fetchReferenceData();
+  }, []);
 
   // Handle input change
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       [name]: type === 'checkbox' ? checked : value,
-    });
+    }));
+  };
+
+  // Validate form data
+  const validateForm = () => {
+    const {
+      nrDeIesire,
+      continutConsultatie,
+      dataApel,
+      localitate,
+      agentEconomic,
+      categorieProdus,
+      categorieServiciu,
+      detalii,
+    } = formData;
+
+    const newErrors = [];
+
+    if (!nrDeIesire) newErrors.push('Vă rugăm să completați Nr. de ieșire.');
+    if (!continutConsultatie) newErrors.push('Vă rugăm să selectați Domeniul Consultație.');
+    if (!dataApel) newErrors.push('Vă rugăm să selectați Data apelului.');
+    if (!localitate) newErrors.push('Vă rugăm să selectați Localitatea (CUATM).');
+    if (!formData.persFizica && !formData.persJuridica)
+      newErrors.push('Vă rugăm să selectați tipul persoanei (Fizică sau Juridică).');
+    if (formData.persJuridica && !agentEconomic)
+      newErrors.push('Vă rugăm să selectați Agent Economic pentru Persoană Juridică.');
+    if (!categorieProdus) newErrors.push('Vă rugăm să selectați Categorie Produs.');
+    if (!categorieServiciu) newErrors.push('Vă rugăm să selectați Categorie Serviciu.');
+    if (!detalii) newErrors.push('Vă rugăm să completați Detalii consultație.');
+
+    if (newErrors.length > 0) {
+      setErrors(newErrors);
+      return false;
+    }
+
+    // Additional validations can be added here (e.g., format checks)
+    setErrors([]);
+    return true;
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (typeof addDocument === 'function') {
-      addDocument(formData);
-      // Reset form after submission
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    setErrors([]); // Reset previous errors
+    setSuccess(false);
+
+    const token = process.env.REACT_APP_API_TOKEN || localStorage.getItem('token');
+
+    // Map formData to API fields
+    const mappedData = {
+      call_id: parseInt(formData.nrDeIesire), // Ensure this is a valid call_id
+      domain_id: parseInt(formData.continutConsultatie, 10),
+      city_id: parseInt(formData.localitate, 10),
+      business_id: formData.persJuridica ? parseInt(formData.agentEconomic, 10) : null,
+      product_id: parseInt(formData.categorieProdus, 10),
+      service_id: parseInt(formData.categorieServiciu, 10),
+      details: formData.detalii,
+      status: 1, // Set appropriate status code
+    };
+
+    try {
+      const response = await fetch('https://crm.xcore.md/api/documents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(mappedData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.errors) {
+          // Extract all error messages
+          const errorMessages = Object.values(errorData.errors).flat();
+          setErrors(errorMessages);
+        } else if (errorData.message) {
+          setErrors([errorData.message]);
+        } else {
+          setErrors(['Eroare neașteptată la trimiterea formularului.']);
+        }
+        throw new Error('Eroare la trimiterea formularului.');
+      }
+
+      const responseData = await response.json();
+      console.log('Document creat:', responseData);
+      setSuccess(true);
+      addDocument(responseData); // Assuming addDocument updates the parent component
+      // Reset form after successful submission
       setFormData({
         nrDeIesire: '',
         continutConsultatie: '',
@@ -129,20 +212,74 @@ const NewDocumentForm = ({ addDocument }) => {
         categorieServiciu: '',
         detalii: '',
       });
-    } else {
-      console.error('addDocument is not a function');
+    } catch (err) {
+      console.error(err);
+      // Errors are already set above
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Render select options helper function
+  const renderSelectOptions = (dataArray) =>
+    dataArray.map((item) => (
+      <option key={item.id} value={item.id}>
+        {item.name}
+      </option>
+    ));
+
   return (
     <form onSubmit={handleSubmit} className="p-2 max-w-4xl mx-auto">
+      {/* Display success message */}
+      {success && (
+        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+          Documentul a fost creat cu succes!
+        </div>
+      )}
+
+      {/* Display error messages */}
+      {errors.length > 0 && (
+        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+          <ul className="list-disc pl-5">
+            {errors.map((err, index) => (
+              <li key={index}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="mb-6">
         <div className="flex justify-between mt-4">
-          <button type="button" className="text-red-500">
+          <button
+            type="button"
+            className="text-red-500"
+            onClick={() => {
+              // Handle form cancellation (reset form)
+              setFormData({
+                nrDeIesire: '',
+                continutConsultatie: '',
+                dataApel: '',
+                localitate: '',
+                persFizica: false,
+                persJuridica: false,
+                agentEconomic: '',
+                categorieProdus: '',
+                categorieServiciu: '',
+                detalii: '',
+              });
+              setErrors([]);
+              setSuccess(false);
+            }}
+          >
             Anulează
           </button>
-          <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">
-            Salvează
+          <button
+            type="submit"
+            className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            disabled={loading}
+          >
+            {loading ? 'Salvând...' : 'Salvează'}
           </button>
         </div>
       </div>
@@ -153,8 +290,11 @@ const NewDocumentForm = ({ addDocument }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Nr. de iesire */}
           <div>
-            <label className="block mb-1">*Nr. de ieșire</label>
+            <label htmlFor="nrDeIesire" className="block mb-1">
+              *Nr. de ieșire
+            </label>
             <input
+              id="nrDeIesire"
               type="text"
               name="nrDeIesire"
               value={formData.nrDeIesire}
@@ -166,8 +306,11 @@ const NewDocumentForm = ({ addDocument }) => {
 
           {/* Domeniul Consultatie - select */}
           <div>
-            <label className="block mb-1">*Domeniul Consultație</label>
+            <label htmlFor="continutConsultatie" className="block mb-1">
+              *Domeniul Consultație
+            </label>
             <select
+              id="continutConsultatie"
               name="continutConsultatie"
               value={formData.continutConsultatie}
               onChange={handleChange}
@@ -175,18 +318,21 @@ const NewDocumentForm = ({ addDocument }) => {
               required
             >
               <option value="">Select...</option>
-              {domeniiConsultatie.map((domeniu, index) => (
-                <option key={index} value={domeniu}>
-                  {domeniu}
-                </option>
-              ))}
+              {domains.length > 0 ? (
+                renderSelectOptions(domains)
+              ) : (
+                <option disabled>Se încarcă...</option>
+              )}
             </select>
           </div>
 
           {/* Data apelului */}
           <div>
-            <label className="block mb-1">*Data apelului</label>
+            <label htmlFor="dataApel" className="block mb-1">
+              *Data apelului
+            </label>
             <input
+              id="dataApel"
               type="date"
               name="dataApel"
               value={formData.dataApel}
@@ -198,8 +344,11 @@ const NewDocumentForm = ({ addDocument }) => {
 
           {/* Localitatea (CUATM) */}
           <div>
-            <label className="block mb-1">*Localitatea (CUATM)</label>
+            <label htmlFor="localitate" className="block mb-1">
+              *Localitatea (CUATM)
+            </label>
             <select
+              id="localitate"
               name="localitate"
               value={formData.localitate}
               onChange={handleChange}
@@ -207,19 +356,20 @@ const NewDocumentForm = ({ addDocument }) => {
               required
             >
               <option value="">Select...</option>
-              {localitati.map((loc, index) => (
-                <option key={index} value={loc}>
-                  {loc}
-                </option>
-              ))}
+              {cities.length > 0 ? (
+                renderSelectOptions(cities)
+              ) : (
+                <option disabled>Se încarcă...</option>
+              )}
             </select>
           </div>
 
           {/* Checkboxes */}
           <div className="col-span-1">
             <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
-              <label>Persoană Fizică</label>
+              <label htmlFor="persFizica">Persoană Fizică</label>
               <input
+                id="persFizica"
                 type="checkbox"
                 name="persFizica"
                 checked={formData.persFizica}
@@ -229,8 +379,9 @@ const NewDocumentForm = ({ addDocument }) => {
           </div>
           <div className="col-span-1">
             <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
-              <label>Persoană Juridică</label>
+              <label htmlFor="persJuridica">Persoană Juridică</label>
               <input
+                id="persJuridica"
                 type="checkbox"
                 name="persJuridica"
                 checked={formData.persJuridica}
@@ -245,24 +396,24 @@ const NewDocumentForm = ({ addDocument }) => {
       <div className="bg-sky-100 p-6 rounded-lg mb-6">
         <h2 className="text-lg font-semibold mb-4">2. Agent Economic</h2>
         <div>
-          <label className="block mb-1">*Agent economic Denumire / IDNO</label>
-          <input
-            type="text"
+          <label htmlFor="agentEconomic" className="block mb-1">
+            *Agent economic Denumire / IDNO
+          </label>
+          <select
+            id="agentEconomic"
             name="agentEconomic"
             value={formData.agentEconomic}
             onChange={handleChange}
             className="border rounded p-2 w-full"
-            placeholder="Introduceți denumirea sau IDNO"
             required
-            list="agentiEconomici"
-          />
-          <datalist id="agentiEconomici">
-            <option value="SRL MoldTelecom" />
-            <option value="SA Orange Moldova" />
-            <option value="SRL StârNet" />
-            <option value="SA Termoelectrica" />
-            <option value="SRL Agropiese TGR" />
-          </datalist>
+          >
+            <option value="">Select...</option>
+            {businesses.length > 0 ? (
+              renderSelectOptions(businesses)
+            ) : (
+              <option disabled>Se încarcă...</option>
+            )}
+          </select>
         </div>
       </div>
 
@@ -272,49 +423,61 @@ const NewDocumentForm = ({ addDocument }) => {
         <div className="grid grid-cols-1 gap-4">
           {/* Categorie Produs */}
           <div>
-            <label className="block mb-1">A. Produs</label>
+            <label htmlFor="categorieProdus" className="block mb-1">
+              A. Produs
+            </label>
             <select
+              id="categorieProdus"
               name="categorieProdus"
               value={formData.categorieProdus}
               onChange={handleChange}
               className="border rounded p-2 w-full"
+              required
             >
               <option value="">Select...</option>
-              {produse.map((produs, index) => (
-                <option key={index} value={produs}>
-                  {produs}
-                </option>
-              ))}
+              {products.length > 0 ? (
+                renderSelectOptions(products)
+              ) : (
+                <option disabled>Se încarcă...</option>
+              )}
             </select>
           </div>
 
           {/* Categorie Serviciu */}
           <div>
-            <label className="block mb-1">B. Serviciu</label>
+            <label htmlFor="categorieServiciu" className="block mb-1">
+              B. Serviciu
+            </label>
             <select
+              id="categorieServiciu"
               name="categorieServiciu"
               value={formData.categorieServiciu}
               onChange={handleChange}
               className="border rounded p-2 w-full"
+              required
             >
               <option value="">Select...</option>
-              {servicii.map((serviciu, index) => (
-                <option key={index} value={serviciu}>
-                  {serviciu}
-                </option>
-              ))}
+              {services.length > 0 ? (
+                renderSelectOptions(services)
+              ) : (
+                <option disabled>Se încarcă...</option>
+              )}
             </select>
           </div>
 
           {/* Detalii */}
           <div>
-            <label className="block mb-1">*Detalii consultație</label>
+            <label htmlFor="detalii" className="block mb-1">
+              *Detalii consultație
+            </label>
             <textarea
+              id="detalii"
               name="detalii"
               value={formData.detalii}
               onChange={handleChange}
               className="border rounded p-2 w-full"
               required
+              placeholder="Introduceți detalii suplimentare..."
             />
           </div>
         </div>

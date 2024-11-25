@@ -1,15 +1,23 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom'; // Import Link and useLocation for route detection
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import ProfileImg from './../assets/profile.jpg';
 import { ChartBarSquareIcon, DocumentIcon, PhoneIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import './../App.css';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const location = useLocation(); // Hook to get the current route
+  const [user, setUser] = useState({ name: '', email: '' }); // State for user details
+
+  useEffect(() => {
+    // Retrieve user details from localStorage
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser)); // Parse and set the user details
+    }
+  }, []);
 
   return (
     <>
-      {/* Sidebar */}
       <div
         className={`fixed md:static inset-y-0 left-0 w-80 h-max-screen bg-[#1E293B] p-5 flex flex-col justify-between transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -20,11 +28,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <div className="text-white text-2xl font-bold mb-8">LOGO</div>
 
           {/* Profile */}
-          <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 mb-8">
+          <div className="bg-gray-700 p-4 rounded-lg flex items-center relative space-x-4 mb-8">
             <img src={ProfileImg} alt="Admin" className="rounded-full h-12 w-12" />
             <div>
-              <p className="text-gray-200 font-medium">Nicu</p>
-              <p className="text-gray-200 text-sm">nicumk@gmail.com</p>
+              <p className="text-gray-200 font-medium">{user.name || 'Guest'}</p>
+              <p className="text-gray-200 text-sm break-all w-full">{user.email || 'guest@example.com'}</p>
             </div>
           </div>
 
@@ -42,7 +50,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </Link>
             </li>
 
-            {/* Apeluri link */}
+            {/* Documente link */}
             <li
               className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700 cursor-pointer transition duration-200 ${
                 location.pathname === '/documente' ? 'bg-gray-700' : ''
@@ -54,7 +62,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </Link>
             </li>
 
-            {/* Contacte link */}
+            {/* Apeluri link */}
             <li
               className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700 cursor-pointer transition duration-200 ${
                 location.pathname === '/apeluri' ? 'bg-gray-700' : ''
@@ -74,7 +82,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </ul>
         </div>
 
-        {/* Footer Section: Activități Deschise / Închise */}
+        {/* Footer Section */}
         <div className="mt-auto">
           <div className="flex items-center text-green-400 mb-2">
             <span className="h-3 w-3 rounded-full bg-green-400 mr-2"></span>
@@ -87,7 +95,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </div>
       </div>
 
-      {/* Overlay for mobile when the sidebar is open */}
+      {/* Overlay for mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black opacity-50 z-30 md:hidden"

@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import HomePage from './components/HomePage'; // Statistica page
 import CallsPage from './components/CallsPage'; // Apeluri page
+import RequireAuth from './components/RequireAuth';
 import NewDocumentForm from './NewDocumentForm';  // NewDocumentForm as a separate page
 import DocumentPage from './components/DocumentPage';
 import LoginPage from './LoginPage';  // Import LoginPage
@@ -52,17 +53,33 @@ function MainApp({ isSidebarOpen, toggleSidebar, addDocument, documents }) {
         {!isLoginPage && <Header toggleSidebar={toggleSidebar} />}
         <div className="flex-1 p-2">
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={
+               <RequireAuth>
+                 <HomePage />
+               </RequireAuth>
+              } />
             <Route path="/login" element={<LoginPage />} /> {/* Login route without sidebar/header */}
-            <Route path="/apeluri" element={<CallsPage />} />
+            <Route path="/apeluri" element={
+               <RequireAuth>
+                 <CallsPage />
+               </RequireAuth>
+              } />
             
             {/* Document page */}
-            <Route path="/documente" element={<DocumentPage documents={documents} />} />
+            <Route path="/documente" element={
+              <RequireAuth>
+                <DocumentPage documents={documents} />
+              </RequireAuth>
+              } />
             
             {/* NewDocumentForm as a separate page */}
             <Route 
               path="/new-document" 
-              element={<NewDocumentForm addDocument={addDocument} />}  // Pass addDocument to the form
+              element={
+                <RequireAuth>
+                  <NewDocumentForm addDocument={addDocument} />
+                </RequireAuth>
+            }  // Pass addDocument to the form
             />
           </Routes>
         </div>
