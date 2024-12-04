@@ -364,29 +364,40 @@ const NewDocumentForm = ({ addDocument }) => {
             </select>
           </div>
 
-          {/* Checkboxes */}
+          {/* Radio buttons */}
           <div className="col-span-1">
-            <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
-              <label htmlFor="persFizica">Persoană Fizică</label>
-              <input
-                id="persFizica"
-                type="checkbox"
-                name="persFizica"
-                checked={formData.persFizica}
-                onChange={handleChange}
-              />
+            <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white cursor-pointer">
+              <label
+                htmlFor="persFizica"
+                className="flex items-center justify-between w-full cursor-pointer"
+              >
+                <span className="select-none">Persoană Fizică</span>
+                <input
+                  id="persFizica"
+                  type="radio"
+                  name="personType"
+                  value="persFizica"
+                  checked={formData.personType === "persFizica"}
+                  onChange={handleChange}
+                  className="cursor-pointer"
+                />
+              </label>
             </div>
           </div>
           <div className="col-span-1">
             <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
-              <label htmlFor="persJuridica">Persoană Juridică</label>
+              <label htmlFor="persJuridica" className='flex items-center justify-between w-full cursor-pointer'>
+                <span className="select-none">Persoană Juridică</span>
               <input
                 id="persJuridica"
-                type="checkbox"
-                name="persJuridica"
-                checked={formData.persJuridica}
+                type="radio"
+                name="personType"
+                value="persJuridica"
+                checked={formData.personType === "persJuridica"}
                 onChange={handleChange}
+                className="cursor-pointer"
               />
+              </label>
             </div>
           </div>
         </div>

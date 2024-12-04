@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // Assuming you're using react-router for navigation
 
 // Utility function to format date to Romanian language
 const formatDateToRomanian = (dateString) => {
@@ -13,6 +14,9 @@ const formatDateToRomanian = (dateString) => {
   return date.toLocaleDateString('ro-RO', options);
 };
 
+// Function to normalize phone numbers by removing non-digit characters
+const normalizePhoneNumber = (phone) => phone.replace(/\D/g, '');
+
 const CallsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
@@ -23,9 +27,11 @@ const CallsPage = () => {
 
   // Fetch data from API
   useEffect(() => {
-    const fetchCalls = async () => {
-      const url = 'https://crm.xcore.md/api/calls/all';
+    const fetchData = async () => {
+      const callsUrl = 'https://crm.xcore.md/api/calls/all';
+      const documentsUrl = 'https://crm.xcore.md/api/documents';
       const token = localStorage.getItem('token'); // Retrieve token from localStorage
+      console.log(token);
 
       const options = {
         method: 'GET',
@@ -36,20 +42,36 @@ const CallsPage = () => {
       };
 
       try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        // Fetch calls data
+        const callsResponse = await fetch(callsUrl, options);
+        if (!callsResponse.ok) {
+          throw new Error(`Error fetching calls: ${callsResponse.status} ${callsResponse.statusText}`);
         }
-        const jsonData = await response.json();
+        const callsJson = await callsResponse.json();
+
+        // Fetch documents data
+        const documentsResponse = await fetch(documentsUrl, options);
+        if (!documentsResponse.ok) {
+          throw new Error(`Error fetching documents: ${documentsResponse.status} ${documentsResponse.statusText}`);
+        }
+        const documentsJson = await documentsResponse.json();
+
+        // Create a map of call_id to document_id
+        const callIdToDocumentId = {};
+        documentsJson.data.forEach((doc) => {
+          callIdToDocumentId[doc.call_id] = doc.id;
+        });
+
         // Transform API data to match table structure
-        const transformedData = jsonData.data.map((item) => ({
+        const transformedData = callsJson.data.map((item) => ({
           id: item.id,
-          statut: item.type === 'out' ? 'Apel ratat' : 'Apel primit',
+          statut: item.type === 'out' ? 'Ieșire' : 'Întrare',
           statutColor: item.type === 'out' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600',
           dateApel: formatDateToRomanian(item.start),
-          notite: '', // Assuming 'notite' comes from another field; adjust accordingly
+          notite: '', // Adjust this if you have notes in your data
           creatDe: item.user.name,
-          contact: item.institution.name || '-', // Fallback to '-' if no institution name
+          contact: item.client || '-',
+          documentId: callIdToDocumentId[item.id] || null, // Add documentId if exists
         }));
         setCallsData(transformedData);
         setLoading(false);
@@ -60,16 +82,12 @@ const CallsPage = () => {
       }
     };
 
-    fetchCalls();
+    fetchData();
   }, []);
 
-  // Filter the data based on the search term
-  const filteredData = callsData.filter(
-    (row) =>
-      row.statut.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.notite.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.creatDe.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.contact.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter the data based on the search term (searching by phone number)
+  const filteredData = callsData.filter((row) =>
+    normalizePhoneNumber(row.contact).includes(normalizePhoneNumber(searchTerm))
   );
 
   // Handle selecting/deselecting a single row
@@ -107,7 +125,7 @@ const CallsPage = () => {
         <div className="relative w-full md:w-auto">
           <input
             type="text"
-            placeholder="Căutare ..."
+            placeholder="Căutare după nr ..."
             className="border rounded-full px-4 py-2 text-gray-600 w-full md:w-64"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -133,7 +151,8 @@ const CallsPage = () => {
               <th className="py-2 md:py-3 px-2 md:px-4 border-b">Creat de</th>
               <th className="py-2 md:py-3 px-2 md:px-4 border-b">Contacte</th>
               <th className="py-2 md:py-3 px-2 md:px-4 border-b">
-                <span className="material-icons text-gray-500">settings</span>
+                {/* Header for the new column */}
+                <span className="material-icons text-gray-500">description</span>
               </th>
             </tr>
           </thead>
@@ -175,7 +194,16 @@ const CallsPage = () => {
                     {row.contact}
                   </td>
                   <td className="py-2 md:py-3 px-2 md:px-4 border-b text-gray-600">
-                    <span className="material-icons">list</span>
+                    {row.documentId ? (
+                      <Link
+                        to={`/documents/${row.documentId}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        <span className="material-icons">description</span>
+                      </Link>
+                    ) : (
+                      <span className="material-icons text-gray-400">description</span>
+                    )}
                   </td>
                 </tr>
               ))
@@ -221,10 +249,24 @@ const CallsPage = () => {
                     {row.contact}
                   </div>
                 )}
-                <div className="text-gray-600 text-sm">
+                <div className="text-gray-600 text-sm mb-1">
                   <a href="#" className="text-blue-600 hover:underline">
                     {row.notite || 'Nicio notiță'}
                   </a>
+                </div>
+                <div className="text-gray-600 text-sm">
+                  {row.documentId ? (
+                    <Link
+                      to={`/documents/${row.documentId}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      <span className="material-icons">description</span> Vezi Document
+                    </Link>
+                  ) : (
+                    <>
+                      <span className="material-icons text-gray-400">description</span> Niciun Document
+                    </>
+                  )}
                 </div>
               </div>
             ))

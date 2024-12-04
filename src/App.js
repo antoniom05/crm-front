@@ -8,6 +8,8 @@ import RequireAuth from './components/RequireAuth';
 import NewDocumentForm from './NewDocumentForm';  // NewDocumentForm as a separate page
 import DocumentPage from './components/DocumentPage';
 import LoginPage from './LoginPage';  // Import LoginPage
+import Crud from './components/Crud';
+import DocumentDetails from './components/DocumentDetails';
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -81,6 +83,20 @@ function MainApp({ isSidebarOpen, toggleSidebar, addDocument, documents }) {
                 </RequireAuth>
             }  // Pass addDocument to the form
             />
+
+            <Route
+              path="/setari"
+              element={
+                <RequireAuth>
+                  <Crud />
+                </RequireAuth>
+              }
+            />
+            <Route exact path="/documents/:documentId" element={
+              <RequireAuth>
+                <DocumentDetails />
+              </RequireAuth>
+              } />
           </Routes>
         </div>
       </div>

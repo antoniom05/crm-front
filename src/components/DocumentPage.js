@@ -8,14 +8,6 @@ const DocumentPage = ({ documents }) => {  // Accept documents as a prop
   return (
     <div className="p-6">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="bg-white shadow-md rounded-lg p-6 min-h-[300px]">
-          <LineChart />
-        </div>
-
-        <div className="bg-white shadow-md rounded-lg p-6 min-h-[300px]">
-          <BarChart />
-        </div>
-
         <div className="col-span-1 md:col-span-2 bg-white shadow-md rounded-lg p-6">
           {/* Pass documents to DocumentTable */}
           <DocumentTable documents={documents} />

@@ -95,8 +95,8 @@ const LoginPage = () => {
 
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center">
-            <input type="checkbox" className="mr-2" />
-            <label className="text-gray-600">Memorează logarea</label>
+            <input name='remember' id='remember' type="checkbox" className="mr-2" />
+            <label for='remember' className="text-gray-600 select-none">Memorează logarea</label>
           </div>
           <div>
             <a href="#" className="text-blue-500">Ați uitat parola?</a>
