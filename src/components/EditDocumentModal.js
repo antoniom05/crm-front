@@ -1,8 +1,10 @@
+// EditDocumentModal.jsx
+
 import React, { useState, useEffect } from 'react';
 
 const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) => {
   const [formData, setFormData] = useState({
-    nrDeIesire: '',
+    numePrenume: '',
     continutConsultatie: '',
     dataApel: '',
     localitate: '',
@@ -12,6 +14,7 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
     categorieProdus: '',
     categorieServiciu: '',
     detalii: '',
+    status: 1, // Default status value
   });
 
   // Reference data state variables
@@ -25,6 +28,13 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState(false);
+
+  // Status options mapping
+  const statusOptions = [
+    { value: 1, label: 'Inchis' },
+    { value: 2, label: 'Respins' },
+    { value: 3, label: 'Rezolvat' },
+  ];
 
   // Helper function to fetch all pages of paginated API data
   const fetchAllPages = async (url, headers) => {
@@ -101,8 +111,13 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
   // Initialize form data with the document data
   useEffect(() => {
     if (documentData) {
+      // Map the status label to its corresponding value
+      const statusValue = statusOptions.find(
+        (option) => option.label === documentData.statut
+      )?.value;
+
       setFormData({
-        nrDeIesire: documentData.nrDeIesire || '',
+        numePrenume: documentData.numePrenume || '',
         continutConsultatie: documentData.domain_id || '',
         dataApel: documentData.dataApel || '',
         localitate: documentData.city_id || '',
@@ -112,6 +127,7 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
         categorieProdus: documentData.product_id || '',
         categorieServiciu: documentData.service_id || '',
         detalii: documentData.detalii || '',
+        status: statusValue || 1, // Default to 1 if status not found
       });
     }
   }, [documentData]);
@@ -119,16 +135,22 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
   // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
     setFormData((prevData) => ({
       ...prevData,
-      [name]: type === 'checkbox' || type === 'radio' ? checked : value,
+      [name]:
+        type === 'checkbox' || type === 'radio'
+          ? checked
+            ? value
+            : prevData[name]
+          : value,
     }));
   };
 
   // Validate form data
   const validateForm = () => {
     const {
-      nrDeIesire,
+      numePrenume,
       continutConsultatie,
       dataApel,
       localitate,
@@ -136,11 +158,12 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
       categorieProdus,
       categorieServiciu,
       detalii,
+      status,
     } = formData;
 
     const newErrors = [];
 
-    if (!nrDeIesire) newErrors.push('Vă rugăm să completați Nr. de ieșire.');
+    if (!numePrenume) newErrors.push('Vă rugăm să completați Nume și Prenume.');
     if (!continutConsultatie) newErrors.push('Vă rugăm să selectați Domeniul Consultație.');
     if (!dataApel) newErrors.push('Vă rugăm să selectați Data apelului.');
     if (!localitate) newErrors.push('Vă rugăm să selectați Localitatea (CUATM).');
@@ -151,6 +174,7 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
     if (!categorieProdus) newErrors.push('Vă rugăm să selectați Categorie Produs.');
     if (!categorieServiciu) newErrors.push('Vă rugăm să selectați Categorie Serviciu.');
     if (!detalii) newErrors.push('Vă rugăm să completați Detalii consultație.');
+    if (!status) newErrors.push('Vă rugăm să selectați Statusul.');
 
     if (newErrors.length > 0) {
       setErrors(newErrors);
@@ -177,15 +201,15 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
 
     // Map formData to API fields
     const mappedData = {
-      call_id: parseInt(formData.nrDeIesire, 10),
+      call_id: 1, // Assuming call_id is required; adjust as needed
       domain_id: parseInt(formData.continutConsultatie, 10),
       city_id: parseInt(formData.localitate, 10),
       business_id: formData.persJuridica ? parseInt(formData.agentEconomic, 10) : null,
       product_id: parseInt(formData.categorieProdus, 10),
       service_id: parseInt(formData.categorieServiciu, 10),
       details: formData.detalii,
-      status: 1,
-      name: '',
+      status: parseInt(formData.status, 10),
+      name: formData.numePrenume,
     };
 
     try {
@@ -217,8 +241,8 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
       // Map the updated document data to match the structure in DocumentTable
       const updatedDoc = {
         nr: updatedDocData.id,
-        statut: updatedDocData.status,
-        nrDeIesire: updatedDocData.institution_id,
+        statut: statusOptions.find((option) => option.value === updatedDocData.status)?.label || '',
+        numePrenume: updatedDocData.name || 'N/A',
         continutConsultatie:
           domains.find((d) => d.id === updatedDocData.domain_id)?.name ||
           `ID: ${updatedDocData.domain_id}`,
@@ -241,10 +265,14 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
         business_id: updatedDocData.business_id,
         service_id: updatedDocData.service_id,
         product_id: updatedDocData.product_id,
+        created_at: updatedDocData.created_at,
       };
 
       setSuccess(true);
       updateDocument(updatedDoc);
+
+      // Refresh the page after successful update
+      window.location.reload();
     } catch (err) {
       console.error(err);
     } finally {
@@ -328,16 +356,16 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
               <div className="bg-sky-100 p-6 rounded-lg mb-6">
                 <h2 className="text-lg font-semibold mb-4">1. Date Apel</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Nr. de iesire */}
+                  {/* Nume și Prenume */}
                   <div>
-                    <label htmlFor="nrDeIesire" className="block mb-1">
-                      *Nr. de ieșire
+                    <label htmlFor="numePrenume" className="block mb-1">
+                      *Nume și Prenume
                     </label>
                     <input
-                      id="nrDeIesire"
+                      id="numePrenume"
                       type="text"
-                      name="nrDeIesire"
-                      value={formData.nrDeIesire}
+                      name="numePrenume"
+                      value={formData.numePrenume}
                       onChange={handleChange}
                       className="border rounded p-2 w-full"
                       required
@@ -404,7 +432,7 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
                     </select>
                   </div>
 
-                  {/* Radio buttons */}
+                  {/* Radio buttons for Person Type */}
                   <div className="col-span-1">
                     <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white cursor-pointer">
                       <label
@@ -454,6 +482,41 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
                           className="cursor-pointer"
                         />
                       </label>
+                    </div>
+                  </div>
+
+                  {/* Radio buttons for Status */}
+                  <div className="col-span-2 mt-4">
+                    <label className="block mb-2">*Status</label>
+                    <div className="grid grid-cols-3 gap-4">
+                      {statusOptions.map((option) => (
+                        <div key={option.value} className="col-span-1">
+                          <div
+                            className={`flex items-center justify-between border border-gray-300 rounded-[10px] p-2 cursor-pointer ${
+                              parseInt(formData.status, 10) === option.value
+                                ? 'bg-blue-500 text-white'
+                                : 'hover:bg-blue-500 hover:text-white'
+                            }`}
+                            onClick={() => setFormData({ ...formData, status: option.value })}
+                          >
+                            <label
+                              htmlFor={`status-${option.value}`}
+                              className="flex items-center justify-between w-full cursor-pointer"
+                            >
+                              <span className="select-none">{option.label}</span>
+                              <input
+                                id={`status-${option.value}`}
+                                type="radio"
+                                name="status"
+                                value={option.value}
+                                checked={parseInt(formData.status, 10) === option.value}
+                                onChange={handleChange}
+                                className="cursor-pointer"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

@@ -30,6 +30,7 @@ const DocumentTable = () => {
   const [documents, setDocuments] = useState([]);
   const [filteredDocuments, setFilteredDocuments] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedPersonType, setSelectedPersonType] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectAll, setSelectAll] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
@@ -44,6 +45,13 @@ const DocumentTable = () => {
 
   // State for editing document
   const [editingDocument, setEditingDocument] = useState(null);
+
+  // State for sorting
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+
+  // State for dropdown menus
+  const [isPersonTypeMenuOpen, setIsPersonTypeMenuOpen] = useState(false);
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
 
   // Fetch documents and related entities from API
   useEffect(() => {
@@ -119,7 +127,7 @@ const DocumentTable = () => {
         const mappedDocuments = documentsData.map((doc) => ({
           nr: doc.id,
           statut: doc.status,
-          nrDeIesire: doc.institution_id,
+          numePrenume: doc.name || 'N/A',
           continutConsultatie: domainsLookup[doc.domain_id] || `ID: ${doc.domain_id}`,
           dataApel: doc.created_at ? doc.created_at.split('T')[0] : 'N/A',
           localitate: citiesLookup[doc.city_id] || `ID: ${doc.city_id}`,
@@ -133,6 +141,7 @@ const DocumentTable = () => {
           business_id: doc.business_id,
           service_id: doc.service_id,
           product_id: doc.product_id,
+          created_at: doc.created_at,
         }));
 
         setDocuments(mappedDocuments);
@@ -148,13 +157,22 @@ const DocumentTable = () => {
     fetchData();
   }, []);
 
-  // Filter documents based on status and search term
+  // Filter and sort documents
   useEffect(() => {
     let filtered = documents;
 
     // Filter by selected status
     if (selectedStatus) {
       filtered = filtered.filter((doc) => doc.statut === selectedStatus);
+    }
+
+    // Filter by selected person type
+    if (selectedPersonType) {
+      if (selectedPersonType === 'Pers. Fizică') {
+        filtered = filtered.filter((doc) => doc.persFizica);
+      } else if (selectedPersonType === 'Pers. Juridică') {
+        filtered = filtered.filter((doc) => doc.persJuridica);
+      }
     }
 
     // Filter by search term (agentEconomic)
@@ -167,14 +185,59 @@ const DocumentTable = () => {
       );
     }
 
+    // Implement sorting
+    if (sortConfig.key) {
+      filtered.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        // Handle different data types
+        if (sortConfig.key === 'dataApel') {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        } else if (sortConfig.key === 'persFizica' || sortConfig.key === 'persJuridica') {
+          aValue = aValue ? 1 : 0;
+          bValue = bValue ? 1 : 0;
+        } else if (sortConfig.key === 'statut') {
+          const statusOrder = ['Inchis', 'Respins', 'Rezolvat'];
+          aValue = statusOrder.indexOf(aValue);
+          bValue = statusOrder.indexOf(bValue);
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
     setFilteredDocuments(filtered);
     setSelectedDocuments([]);
     setSelectAll(false);
-  }, [documents, selectedStatus, searchTerm]);
+  }, [documents, selectedStatus, selectedPersonType, searchTerm, sortConfig]);
 
   // Handle status filter change
   const handleStatusFilter = (status) => {
     setSelectedStatus(status);
+    setIsStatusMenuOpen(false);
+  };
+
+  // Handle person type filter change
+  const handlePersonTypeFilter = (type) => {
+    setSelectedPersonType(type);
+    setIsPersonTypeMenuOpen(false);
+  };
+
+  // Handle sorting
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
   };
 
   // Handle select/deselect all
@@ -209,6 +272,20 @@ const DocumentTable = () => {
     setEditingDocument(null);
   };
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown')) {
+        setIsPersonTypeMenuOpen(false);
+        setIsStatusMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="p-4">
       {/* Display error messages */}
@@ -235,45 +312,87 @@ const DocumentTable = () => {
           />
         </div>
         <div className="flex space-x-4 mb-2 md:mb-0">
-          <div className="relative group">
-            <button className="border px-4 py-2 rounded-lg">Tip</button>
-            {/* Implement Tip dropdown as needed */}
+          {/* Tip persoană Filter */}
+          <div className="relative dropdown">
+            <button
+              className="border px-4 py-2 rounded-lg"
+              onClick={() => setIsPersonTypeMenuOpen(!isPersonTypeMenuOpen)}
+            >
+              Tip persoană
+            </button>
+            {isPersonTypeMenuOpen && (
+              <div className="absolute bg-white border mt-2 p-2 rounded-lg shadow-lg w-40 z-10">
+                <ul className="space-y-2">
+                  <li
+                    className="cursor-pointer py-1 text-center hover:bg-gray-200"
+                    onClick={() => handlePersonTypeFilter('Pers. Fizică')}
+                  >
+                    Pers. Fizică
+                  </li>
+                  <li
+                    className="cursor-pointer py-1 text-center hover:bg-gray-200"
+                    onClick={() => handlePersonTypeFilter('Pers. Juridică')}
+                  >
+                    Pers. Juridică
+                  </li>
+                  <li
+                    className="cursor-pointer py-1 text-center hover:bg-gray-200"
+                    onClick={() => handlePersonTypeFilter('')}
+                  >
+                    Toate
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
-          <div className="relative group">
-            <button className="border px-4 py-2 rounded-lg">Statut</button>
-            {/* Hover dropdown for "Statut" */}
-            <div className="absolute hidden group-hover:block bg-white border mt-2 p-2 rounded-lg shadow-lg w-40 z-10">
-              <ul className="space-y-2">
-                <li
-                  className="cursor-pointer rounded-full bg-green-100 text-green-600 py-1 text-center hover:bg-green-200"
-                  onClick={() => handleStatusFilter('Inchis')}
-                >
-                  Închis
-                </li>
-                <li
-                  className="cursor-pointer rounded-full bg-red-100 text-red-600 py-1 text-center hover:bg-red-200"
-                  onClick={() => handleStatusFilter('Respins')}
-                >
-                  Respins
-                </li>
-                <li
-                  className="cursor-pointer rounded-full bg-blue-100 text-blue-600 py-1 text-center hover:bg-blue-200"
-                  onClick={() => handleStatusFilter('Rezolvat')}
-                >
-                  Rezolvat
-                </li>
-                <li
-                  className="cursor-pointer rounded-full bg-gray-100 text-gray-600 py-1 text-center hover:bg-gray-200"
-                  onClick={() => handleStatusFilter('')}
-                >
-                  Toate
-                </li>
-              </ul>
-            </div>
+          {/* Statut Filter */}
+          <div className="relative dropdown">
+            <button
+              className="border px-4 py-2 rounded-lg"
+              onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+            >
+              Statut
+            </button>
+            {isStatusMenuOpen && (
+              <div className="absolute bg-white border mt-2 p-2 rounded-lg shadow-lg w-40 z-10">
+                <ul className="space-y-2">
+                  <li
+                    className="cursor-pointer rounded-full bg-green-100 text-green-600 py-1 text-center hover:bg-green-200"
+                    onClick={() => handleStatusFilter('Inchis')}
+                  >
+                    Închis
+                  </li>
+                  <li
+                    className="cursor-pointer rounded-full bg-red-100 text-red-600 py-1 text-center hover:bg-red-200"
+                    onClick={() => handleStatusFilter('Respins')}
+                  >
+                    Respins
+                  </li>
+                  <li
+                    className="cursor-pointer rounded-full bg-blue-100 text-blue-600 py-1 text-center hover:bg-blue-200"
+                    onClick={() => handleStatusFilter('Rezolvat')}
+                  >
+                    Rezolvat
+                  </li>
+                  <li
+                    className="cursor-pointer rounded-full bg-gray-100 text-gray-600 py-1 text-center hover:bg-gray-200"
+                    onClick={() => handleStatusFilter('')}
+                  >
+                    Toate
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
-          <div className="relative group">
-            <button className="border px-4 py-2 rounded-lg">Creat</button>
-            {/* Implement Creat dropdown as needed */}
+          {/* Sortează după dată */}
+          <div className="relative">
+            <button
+              className="border px-4 py-2 rounded-lg"
+              onClick={() => handleSort('dataApel')}
+            >
+              Sortează după dată{' '}
+              {sortConfig.key === 'dataApel' ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : ''}
+            </button>
           </div>
         </div>
         <div>{filteredDocuments.length} Documente</div>
@@ -292,50 +411,44 @@ const DocumentTable = () => {
                   onChange={handleSelectAll}
                 />
               </th>
-              <th className="py-2 px-4 border-b text-left cursor-pointer">
+              <th
+                className="py-2 px-4 border-b text-left cursor-pointer"
+                onClick={() => handleSort('nr')}
+              >
                 Nr.
+                {sortConfig.key === 'nr' ? (sortConfig.direction === 'ascending' ? ' ↑' : ' ↓') : ''}
               </th>
-
-              {/* Hover functionality for "Statut" */}
-              <th className="py-2 px-4 border-b text-left relative group">
+              <th
+                className="py-2 px-4 border-b text-left cursor-pointer"
+                onClick={() => handleSort('statut')}
+              >
                 Statut
-                {/* Hover dropdown for "Statut" */}
-                <div className="absolute hidden group-hover:block bg-white border mt-2 p-2 rounded-lg shadow-lg w-32 z-10">
-                  <ul className="space-y-2">
-                    <li
-                      className="cursor-pointer rounded-full bg-green-100 text-green-600 py-1 text-center hover:bg-green-200"
-                      onClick={() => handleStatusFilter('Inchis')}
-                    >
-                      Închis
-                    </li>
-                    <li
-                      className="cursor-pointer rounded-full bg-red-100 text-red-600 py-1 text-center hover:bg-red-200"
-                      onClick={() => handleStatusFilter('Respins')}
-                    >
-                      Respins
-                    </li>
-                    <li
-                      className="cursor-pointer rounded-full bg-blue-100 text-blue-600 py-1 text-center hover:bg-blue-200"
-                      onClick={() => handleStatusFilter('Rezolvat')}
-                    >
-                      Rezolvat
-                    </li>
-                    <li
-                      className="cursor-pointer rounded-full bg-gray-100 text-gray-600 py-1 text-center hover:bg-gray-200"
-                      onClick={() => handleStatusFilter('')}
-                    >
-                      Toate
-                    </li>
-                  </ul>
-                </div>
+                {sortConfig.key === 'statut' ? (sortConfig.direction === 'ascending' ? ' ↑' : ' ↓') : ''}
               </th>
-
-              <th className="py-2 px-4 border-b text-left">Nr. de ieșire</th>
+              <th className="py-2 px-4 border-b text-left">Nume & Prenume</th>
               <th className="py-2 px-4 border-b text-left">Domeniul Consultație</th>
-              <th className="py-2 px-4 border-b text-left">Data apelului</th>
+              <th
+                className="py-2 px-4 border-b text-left cursor-pointer"
+                onClick={() => handleSort('dataApel')}
+              >
+                Data apelului
+                {sortConfig.key === 'dataApel' ? (sortConfig.direction === 'ascending' ? ' ↑' : ' ↓') : ''}
+              </th>
               <th className="py-2 px-4 border-b text-left">Localitatea (CUATM)</th>
-              <th className="py-2 px-4 border-b text-left">Pers. Fizică</th>
-              <th className="py-2 px-4 border-b text-left">Pers. Juridică</th>
+              <th
+                className="py-2 px-4 border-b text-left cursor-pointer"
+                onClick={() => handleSort('persFizica')}
+              >
+                Pers. Fizică
+                {sortConfig.key === 'persFizica' ? (sortConfig.direction === 'ascending' ? ' ↑' : ' ↓') : ''}
+              </th>
+              <th
+                className="py-2 px-4 border-b text-left cursor-pointer"
+                onClick={() => handleSort('persJuridica')}
+              >
+                Pers. Juridică
+                {sortConfig.key === 'persJuridica' ? (sortConfig.direction === 'ascending' ? ' ↑' : ' ↓') : ''}
+              </th>
               <th className="py-2 px-4 border-b text-left">Agent economic / Denumire / IDNO</th>
               <th className="py-2 px-4 border-b text-left">Categorie Informație</th>
               <th className="py-2 px-4 border-b text-left">Detalii</th>
@@ -376,7 +489,7 @@ const DocumentTable = () => {
                       {doc.statut}
                     </span>
                   </td>
-                  <td className="py-3 px-4 border-b">{doc.nrDeIesire}</td>
+                  <td className="py-3 px-4 border-b">{doc.numePrenume}</td>
                   <td className="py-3 px-4 border-b">{doc.continutConsultatie}</td>
                   <td className="py-3 px-4 border-b">{doc.dataApel}</td>
                   <td className="py-3 px-4 border-b">{doc.localitate}</td>

@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 
 const NewDocumentForm = ({ addDocument }) => {
   const [formData, setFormData] = useState({
-    nrDeIesire: '',
+    numePrenume: '',
     continutConsultatie: '',
     dataApel: '',
     localitate: '',
-    persFizica: false,
-    persJuridica: false,
+    personType: '',
     agentEconomic: '',
     categorieProdus: '',
     categorieServiciu: '',
@@ -53,7 +52,7 @@ const NewDocumentForm = ({ addDocument }) => {
   useEffect(() => {
     const fetchReferenceData = async () => {
       try {
-        const token = process.env.REACT_APP_API_TOKEN || localStorage.getItem('token');
+        const token = localStorage.getItem('token');
 
         // Define the endpoints for reference data
         const endpoints = {
@@ -110,7 +109,7 @@ const NewDocumentForm = ({ addDocument }) => {
   // Validate form data
   const validateForm = () => {
     const {
-      nrDeIesire,
+      numePrenume,
       continutConsultatie,
       dataApel,
       localitate,
@@ -122,13 +121,13 @@ const NewDocumentForm = ({ addDocument }) => {
 
     const newErrors = [];
 
-    if (!nrDeIesire) newErrors.push('Vă rugăm să completați Nr. de ieșire.');
+    if (!numePrenume) newErrors.push('Vă rugăm să completați Nume și Prenume.');
     if (!continutConsultatie) newErrors.push('Vă rugăm să selectați Domeniul Consultație.');
     if (!dataApel) newErrors.push('Vă rugăm să selectați Data apelului.');
     if (!localitate) newErrors.push('Vă rugăm să selectați Localitatea (CUATM).');
-    if (!formData.persFizica && !formData.persJuridica)
+    if (!formData.personType)
       newErrors.push('Vă rugăm să selectați tipul persoanei (Fizică sau Juridică).');
-    if (formData.persJuridica && !agentEconomic)
+    if (formData.personType === 'persJuridica' && !agentEconomic)
       newErrors.push('Vă rugăm să selectați Agent Economic pentru Persoană Juridică.');
     if (!categorieProdus) newErrors.push('Vă rugăm să selectați Categorie Produs.');
     if (!categorieServiciu) newErrors.push('Vă rugăm să selectați Categorie Serviciu.');
@@ -156,14 +155,17 @@ const NewDocumentForm = ({ addDocument }) => {
     setErrors([]); // Reset previous errors
     setSuccess(false);
 
-    const token = process.env.REACT_APP_API_TOKEN || localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     // Map formData to API fields
     const mappedData = {
-      call_id: parseInt(formData.nrDeIesire), // Ensure this is a valid call_id
+      // call_id: parseInt(formData.nrDeIesire), // Removed as per instruction
+      name: formData.numePrenume,
       domain_id: parseInt(formData.continutConsultatie, 10),
+      call_id: 1,
       city_id: parseInt(formData.localitate, 10),
-      business_id: formData.persJuridica ? parseInt(formData.agentEconomic, 10) : null,
+      business_id:
+        formData.personType === 'persJuridica' ? parseInt(formData.agentEconomic, 10) : null,
       product_id: parseInt(formData.categorieProdus, 10),
       service_id: parseInt(formData.categorieServiciu, 10),
       details: formData.detalii,
@@ -201,12 +203,11 @@ const NewDocumentForm = ({ addDocument }) => {
       addDocument(responseData); // Assuming addDocument updates the parent component
       // Reset form after successful submission
       setFormData({
-        nrDeIesire: '',
+        numePrenume: '',
         continutConsultatie: '',
         dataApel: '',
         localitate: '',
-        persFizica: false,
-        persJuridica: false,
+        personType: '',
         agentEconomic: '',
         categorieProdus: '',
         categorieServiciu: '',
@@ -256,12 +257,11 @@ const NewDocumentForm = ({ addDocument }) => {
             onClick={() => {
               // Handle form cancellation (reset form)
               setFormData({
-                nrDeIesire: '',
+                numePrenume: '',
                 continutConsultatie: '',
                 dataApel: '',
                 localitate: '',
-                persFizica: false,
-                persJuridica: false,
+                personType: '',
                 agentEconomic: '',
                 categorieProdus: '',
                 categorieServiciu: '',
@@ -275,8 +275,9 @@ const NewDocumentForm = ({ addDocument }) => {
           </button>
           <button
             type="submit"
-            className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+            className={`bg-blue-500 text-white py-2 px-4 rounded ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             disabled={loading}
           >
             {loading ? 'Salvând...' : 'Salvează'}
@@ -288,16 +289,16 @@ const NewDocumentForm = ({ addDocument }) => {
       <div className="bg-sky-100 p-6 rounded-lg mb-6">
         <h2 className="text-lg font-semibold mb-4">1. Date Apel</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Nr. de iesire */}
+          {/* Nume și Prenume */}
           <div>
-            <label htmlFor="nrDeIesire" className="block mb-1">
-              *Nr. de ieșire
+            <label htmlFor="numePrenume" className="block mb-1">
+              *Nume și Prenume
             </label>
             <input
-              id="nrDeIesire"
+              id="numePrenume"
               type="text"
-              name="nrDeIesire"
-              value={formData.nrDeIesire}
+              name="numePrenume"
+              value={formData.numePrenume}
               onChange={handleChange}
               className="border rounded p-2 w-full"
               required
@@ -377,7 +378,7 @@ const NewDocumentForm = ({ addDocument }) => {
                   type="radio"
                   name="personType"
                   value="persFizica"
-                  checked={formData.personType === "persFizica"}
+                  checked={formData.personType === 'persFizica'}
                   onChange={handleChange}
                   className="cursor-pointer"
                 />
@@ -386,47 +387,52 @@ const NewDocumentForm = ({ addDocument }) => {
           </div>
           <div className="col-span-1">
             <div className="flex items-center justify-between border border-gray-300 rounded-[10px] p-2 hover:bg-blue-500 hover:text-white">
-              <label htmlFor="persJuridica" className='flex items-center justify-between w-full cursor-pointer'>
+              <label
+                htmlFor="persJuridica"
+                className="flex items-center justify-between w-full cursor-pointer"
+              >
                 <span className="select-none">Persoană Juridică</span>
-              <input
-                id="persJuridica"
-                type="radio"
-                name="personType"
-                value="persJuridica"
-                checked={formData.personType === "persJuridica"}
-                onChange={handleChange}
-                className="cursor-pointer"
-              />
+                <input
+                  id="persJuridica"
+                  type="radio"
+                  name="personType"
+                  value="persJuridica"
+                  checked={formData.personType === 'persJuridica'}
+                  onChange={handleChange}
+                  className="cursor-pointer"
+                />
               </label>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Agent Economic Section */}
-      <div className="bg-sky-100 p-6 rounded-lg mb-6">
-        <h2 className="text-lg font-semibold mb-4">2. Agent Economic</h2>
-        <div>
-          <label htmlFor="agentEconomic" className="block mb-1">
-            *Agent economic Denumire / IDNO
-          </label>
-          <select
-            id="agentEconomic"
-            name="agentEconomic"
-            value={formData.agentEconomic}
-            onChange={handleChange}
-            className="border rounded p-2 w-full"
-            required
-          >
-            <option value="">Select...</option>
-            {businesses.length > 0 ? (
-              renderSelectOptions(businesses)
-            ) : (
-              <option disabled>Se încarcă...</option>
-            )}
-          </select>
+      {/* 2. Agent Economic Section (Only show if Persoană Juridică is selected) */}
+      {formData.personType === 'persJuridica' && (
+        <div className="bg-sky-100 p-6 rounded-lg mb-6">
+          <h2 className="text-lg font-semibold mb-4">2. Agent Economic</h2>
+          <div>
+            <label htmlFor="agentEconomic" className="block mb-1">
+              *Agent economic Denumire / IDNO
+            </label>
+            <select
+              id="agentEconomic"
+              name="agentEconomic"
+              value={formData.agentEconomic}
+              onChange={handleChange}
+              className="border rounded p-2 w-full"
+              required
+            >
+              <option value="">Select...</option>
+              {businesses.length > 0 ? (
+                renderSelectOptions(businesses)
+              ) : (
+                <option disabled>Se încarcă...</option>
+              )}
+            </select>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 3. Detalii Apel Section */}
       <div className="bg-sky-100 p-6 rounded-lg">
