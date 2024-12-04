@@ -6,6 +6,7 @@ import {
   DocumentIcon,
   PhoneIcon,
   Cog6ToothIcon,
+  ExportIcon
 } from '@heroicons/react/24/outline';
 import './../App.css';
 
@@ -17,6 +18,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     inchis: 0,
     respins: 0,
   });
+  
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -171,6 +173,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <Link to="/setari" className="text-white no-underline flex-1">
                 Setări
               </Link>
+            </li>
+            <li
+              className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700 cursor-pointer transition duration-200 ${
+                location.pathname === '/setari' ? 'bg-gray-700' : ''
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              <p className="text-white no-underline flex-1">
+                Exportează datele
+              </p>
             </li>
           </ul>
         </div>
