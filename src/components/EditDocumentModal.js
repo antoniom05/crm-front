@@ -1,8 +1,6 @@
-// EditDocumentModal.jsx
-
 import React, { useState, useEffect } from 'react';
 
-const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) => {
+const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument, callId }) => {
   const [formData, setFormData] = useState({
     numePrenume: '',
     continutConsultatie: '',
@@ -188,20 +186,26 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!validateForm()) {
       return;
     }
-
+  
     setLoading(true);
     setErrors([]);
     setSuccess(false);
-
+  
     const token = localStorage.getItem('token');
-
+  
+    // Determine the request method and URL
+    const method = documentData ? 'PATCH' : 'POST';
+    const url = documentData
+      ? `https://crm.xcore.md/api/documents/${documentData.nr}`
+      : 'https://crm.xcore.md/api/documents';
+  
     // Map formData to API fields
     const mappedData = {
-      call_id: 1, // Assuming call_id is required; adjust as needed
+      call_id: documentData ? documentData.call_id : callId,
       domain_id: parseInt(formData.continutConsultatie, 10),
       city_id: parseInt(formData.localitate, 10),
       business_id: formData.persJuridica ? parseInt(formData.agentEconomic, 10) : null,
@@ -211,10 +215,10 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
       status: parseInt(formData.status, 10),
       name: formData.numePrenume,
     };
-
+  
     try {
-      const response = await fetch(`https://crm.xcore.md/api/documents/${documentData.nr}`, {
-        method: 'PATCH',
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -222,7 +226,7 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
         },
         body: JSON.stringify(mappedData),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         if (errorData.errors) {
@@ -235,50 +239,31 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
         }
         throw new Error('Eroare la actualizarea documentului.');
       }
-
-      const updatedDocData = await response.json();
-
-      // Map the updated document data to match the structure in DocumentTable
+  
+      const responseData = await response.json();
+  
       const updatedDoc = {
-        nr: updatedDocData.id,
-        statut: statusOptions.find((option) => option.value === updatedDocData.status)?.label || '',
-        numePrenume: updatedDocData.name || 'N/A',
-        continutConsultatie:
-          domains.find((d) => d.id === updatedDocData.domain_id)?.name ||
-          `ID: ${updatedDocData.domain_id}`,
-        dataApel: updatedDocData.created_at ? updatedDocData.created_at.split('T')[0] : 'N/A',
-        localitate:
-          cities.find((c) => c.id === updatedDocData.city_id)?.name ||
-          `ID: ${updatedDocData.city_id}`,
-        persFizica: updatedDocData.business_id === null,
-        persJuridica: updatedDocData.business_id !== null,
-        agentEconomic: updatedDocData.business_id
-          ? businesses.find((b) => b.id === updatedDocData.business_id)?.name ||
-            `ID: ${updatedDocData.business_id}`
-          : 'N/A',
-        categorieInformatie:
-          services.find((s) => s.id === updatedDocData.service_id)?.name ||
-          `ID: ${updatedDocData.service_id}`,
-        detalii: updatedDocData.details,
-        domain_id: updatedDocData.domain_id,
-        city_id: updatedDocData.city_id,
-        business_id: updatedDocData.business_id,
-        service_id: updatedDocData.service_id,
-        product_id: updatedDocData.product_id,
-        created_at: updatedDocData.created_at,
+        id: responseData.id,
+        call_id: responseData.call_id,
+        // Map other fields as needed...
       };
-
+  
       setSuccess(true);
       updateDocument(updatedDoc);
-
-      // Refresh the page after successful update
+  
+      // Close the modal
+      onClose();
+  
+      // Reload the page after successful creation or update
       window.location.reload();
+  
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+  
 
   // Handle delete document
   const handleDelete = async () => {
@@ -330,12 +315,14 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
           >
             &times;
           </button>
-          <h2 className="text-xl font-semibold mb-4">Editare Document</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            {documentData ? 'Editare Document' : 'Creare Document'}
+          </h2>
 
           {/* Display success or error messages */}
           {success && (
             <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
-              Documentul a fost actualizat cu succes!
+              Documentul a fost {documentData ? 'actualizat' : 'creat'} cu succes!
             </div>
           )}
           {errors.length > 0 && (
@@ -618,14 +605,16 @@ const EditDocumentModal = ({ isOpen, onClose, documentData, updateDocument }) =>
 
             {/* Action buttons */}
             <div className="flex justify-between mt-6">
-              <button
-                type="button"
-                className="text-red-500"
-                onClick={handleDelete}
-                disabled={loading}
-              >
-                Șterge
-              </button>
+              {documentData && (
+                <button
+                  type="button"
+                  className="text-red-500"
+                  onClick={handleDelete}
+                  disabled={loading}
+                >
+                  Șterge
+                </button>
+              )}
               <div>
                 <button
                   type="button"

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Assuming you're using react-router for navigation
+import EditDocumentModal from './EditDocumentModal'; // Import your modal component
+import { Link, useNavigate } from 'react-router-dom';
+
 
 // Utility function to format date to Romanian language
 const formatDateToRomanian = (dateString) => {
@@ -25,6 +27,10 @@ const CallsPage = () => {
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCallId, setSelectedCallId] = useState(null);
+  const navigate = useNavigate();
+  
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
@@ -107,6 +113,30 @@ const CallsPage = () => {
       setSelectedRows(filteredData.map((_, index) => index));
     }
     setSelectAll(!selectAll);
+  };
+
+  const handleIconClick = (row) => {
+    if (row.documentId) {
+      // Redirect to the document details page
+      navigate(`/documents/${row.documentId}`);
+    } else {
+      // Open the modal to create a new document
+      setSelectedCallId(row.id);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleDocumentCreated = (newDocument) => {
+    setCallsData((prevCallsData) =>
+      prevCallsData.map((call) => {
+        if (call.id === newDocument.call_id) {
+          return { ...call, documentId: newDocument.id };
+        } else {
+          return call;
+        }
+      })
+    );
+    setIsModalOpen(false);
   };
 
   if (loading) {
@@ -194,16 +224,14 @@ const CallsPage = () => {
                     {row.contact}
                   </td>
                   <td className="py-2 md:py-3 px-2 md:px-4 border-b text-gray-600">
-                    {row.documentId ? (
-                      <Link
-                        to={`/documents/${row.documentId}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        <span className="material-icons">description</span>
-                      </Link>
-                    ) : (
-                      <span className="material-icons text-gray-400">description</span>
-                    )}
+                    <span
+                      className={`material-icons ${
+                        row.documentId ? 'text-blue-600 hover:underline' : 'text-gray-400'
+                      } cursor-pointer`}
+                      onClick={() => handleIconClick(row)}
+                    >
+                      description
+                    </span>
                   </td>
                 </tr>
               ))
@@ -254,25 +282,35 @@ const CallsPage = () => {
                     {row.notite || 'Nicio notiță'}
                   </a>
                 </div>
-                <div className="text-gray-600 text-sm">
-                  {row.documentId ? (
-                    <Link
-                      to={`/documents/${row.documentId}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      <span className="material-icons">description</span> Vezi Document
-                    </Link>
-                  ) : (
-                    <>
-                      <span className="material-icons text-gray-400">description</span> Niciun Document
-                    </>
-                  )}
+                <div
+                  className="text-gray-600 text-sm cursor-pointer"
+                  onClick={() => handleIconClick(row)}
+                >
+                  <span
+                    className={`material-icons ${
+                      row.documentId ? 'text-blue-600' : 'text-gray-400'
+                    }`}
+                  >
+                    description
+                  </span>
+                  {row.documentId ? ' Vezi Document' : ' Niciun Document'}
                 </div>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {/* Render EditDocumentModal */}
+      {isModalOpen && (
+        <EditDocumentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          documentData={null} // Since we are creating a new document
+          callId={selectedCallId}
+          updateDocument={handleDocumentCreated}
+        />
+      )}
     </div>
   );
 };

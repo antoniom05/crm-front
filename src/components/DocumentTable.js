@@ -142,6 +142,7 @@ const DocumentTable = () => {
           service_id: doc.service_id,
           product_id: doc.product_id,
           created_at: doc.created_at,
+          call_id: doc.call_id,
         }));
 
         setDocuments(mappedDocuments);

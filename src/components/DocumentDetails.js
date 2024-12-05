@@ -93,6 +93,7 @@ const DocumentDetails = () => {
           business_id: doc.business_id,
           service_id: doc.service_id,
           product_id: doc.product_id,
+          nume: doc.name,
         };
 
         setDocument(mappedDocument);
@@ -157,8 +158,8 @@ const DocumentDetails = () => {
             </td>
           </tr>
           <tr>
-            <td className="py-3 px-4 border-b font-bold">Nr. de ieșire</td>
-            <td className="py-3 px-4 border-b">{document.nrDeIesire}</td>
+            <td className="py-3 px-4 border-b font-bold">Nume & Prenume</td>
+            <td className="py-3 px-4 border-b">{document.nume}</td>
           </tr>
           <tr>
             <td className="py-3 px-4 border-b font-bold">Domeniul Consultație</td>
