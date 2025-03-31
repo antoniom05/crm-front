@@ -4,8 +4,7 @@ const NewElementForm = () => {
   const initialFormData = {
     elementType: '',
     name: '',
-    institution_id: '',
-    idno: '',
+    idno: ''
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -24,16 +23,14 @@ const NewElementForm = () => {
 
   // Validate form data
   const validateForm = () => {
-    const { elementType, name, institution_id, idno } = formData;
+    const { elementType, name, idno } = formData;
     const newErrors = [];
-
+  
     if (!elementType) newErrors.push('Vă rugăm să selectați tipul de element.');
     if (!name) newErrors.push('Vă rugăm să introduceți numele.');
-    if (elementType === 'Domain' && !institution_id)
-      newErrors.push('Vă rugăm să introduceți Institution ID pentru Domeniu.');
     if (elementType === 'Business' && !idno)
       newErrors.push('Vă rugăm să introduceți IDNO pentru Business.');
-
+  
     setErrors(newErrors);
     return newErrors.length === 0;
   };
@@ -53,13 +50,6 @@ const NewElementForm = () => {
     let url = '';
     let body = {};
   
-    // Additional check for institution_id validity (only for Domain)
-    if (formData.elementType === 'Domain' && !isValidInstitutionId(formData.institution_id)) {
-      setErrors(['ID-ul instituției nu este valid.']);
-      setLoading(false);
-      return;
-    }
-  
     switch (formData.elementType) {
       case 'Product':
         url = 'https://crm.xcore.md/api/products';
@@ -71,10 +61,7 @@ const NewElementForm = () => {
         break;
       case 'Domain':
         url = 'https://crm.xcore.md/api/domains';
-        body = {
-          name: formData.name,
-          institution_id: parseInt(formData.institution_id, 10),
-        };
+        body = { name: formData.name }; // ✅ No institution_id
         break;
       case 'Business':
         url = 'https://crm.xcore.md/api/business';
@@ -100,7 +87,6 @@ const NewElementForm = () => {
       if (!response.ok) {
         const errorData = await response.json();
         if (errorData.errors) {
-          // Handle specific validation errors from the backend
           const errorMessages = Object.values(errorData.errors).flat();
           setErrors(errorMessages);
         } else {
@@ -109,12 +95,10 @@ const NewElementForm = () => {
         setLoading(false);
         return;
       }
-      
   
       const responseData = await response.json();
       console.log('Element creat:', responseData);
       setSuccess(true);
-      // Reset form after successful submission
       setFormData(initialFormData);
     } catch (err) {
       console.error(err);
@@ -124,11 +108,6 @@ const NewElementForm = () => {
     }
   };
   
-  // Helper function to validate Institution ID
-  const isValidInstitutionId = (institutionId) => {
-    const institutionIdPattern = /^[0-9]+$/; // Only numbers allowed for Institution ID
-    return institutionIdPattern.test(institutionId);
-  };
   
 
   // Handle form cancellation
@@ -230,22 +209,7 @@ const NewElementForm = () => {
           </div>
 
           {/* Institution ID (for Domain) */}
-          {formData.elementType === 'Domain' && (
-            <div>
-              <label htmlFor="institution_id" className="block mb-1">
-                *Institution ID
-              </label>
-              <input
-                id="institution_id"
-                type="number"
-                name="institution_id"
-                value={formData.institution_id}
-                onChange={handleChange}
-                className="border rounded p-2 w-full"
-                required
-              />
-            </div>
-          )}
+         
 
           {/* IDNO (for Business) */}
           {formData.elementType === 'Business' && (

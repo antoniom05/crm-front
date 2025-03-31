@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import EditDocumentModal from './EditDocumentModal';
+import * as XLSX from 'xlsx'; // ✅ Import for Excel export
+
+
+
 
 // Helper function to fetch all pages of paginated API data
 const fetchAllPages = async (url, headers) => {
@@ -157,7 +161,15 @@ const DocumentTable = () => {
 
     fetchData();
   }, []);
-
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredDocuments);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Documente');
+  
+    // Generate and trigger download
+    XLSX.writeFile(workbook, 'documente.xlsx');
+  };
+  
   // Filter and sort documents
   useEffect(() => {
     let filtered = documents;
@@ -343,7 +355,9 @@ const DocumentTable = () => {
                     Toate
                   </li>
                 </ul>
+               
               </div>
+              
             )}
           </div>
           {/* Statut Filter */}
@@ -395,6 +409,14 @@ const DocumentTable = () => {
               {sortConfig.key === 'dataApel' ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : ''}
             </button>
           </div>
+           <div className=" md:mt-0">
+    <button
+      onClick={exportToExcel}
+      className="border px-4 py-2 rounded-lg"
+    >
+      Exportă Excel
+    </button>
+  </div>
         </div>
         <div>{filteredDocuments.length} Documente</div>
       </div>
